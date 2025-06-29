@@ -23,7 +23,7 @@
   {{ sql_header if sql_header is not none }}
 
   create table {{ relation.include(database=False) }}
-  {%- if indexs is not none -%}
+  {%- if indexs is not none and engine == 'OLAP' -%}
     {%- for index in indexs -%}
       {%- set columns = index.get('columns') -%}
       (
@@ -34,6 +34,8 @@
 
   {%- if engine == 'OLAP' -%}
     {{ starrocks__olap_table(True) }}
+  {%- elif engine == 'HIVE' -%}
+    {{ starrocks__hive_table() }}
   {%- else -%}
     {%- set msg -%}
       "ENGINE = {{ engine }}" does not support, currently only supports 'OLAP'

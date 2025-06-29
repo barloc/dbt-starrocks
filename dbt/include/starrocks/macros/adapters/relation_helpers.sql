@@ -88,7 +88,7 @@
       {%- for item in distributed_by -%}
         {{ item }} {%- if not loop.last -%}, {%- endif -%}
       {%- endfor -%}
-    ) 
+    )
     {%- if buckets is not none -%}
       BUCKETS {{ buckets }}
     {%- elif adapter.is_before_version("2.5.7") -%}
@@ -137,6 +137,34 @@
       {% endfor %}
     )
   {% endif %}
+{%- endmacro %}
+
+{% macro starrocks__hive_table() -%}
+
+  {%- set partition_by = config.get('partition_by', none) -%}
+  {%- set location = config.get('location', none) -%}
+  {%- set file_format = config.get('file_format', 'parquet') -%}
+
+  {%- if partition_by is not none -%}
+  PARTITION BY (
+      {%- for item in partition_by -%}
+        {{ item }} {%- if not loop.last -%}, {%- endif -%}
+      {%- endfor -%}
+    )
+  {%- endif -%}
+
+  {%- if location is not none or file_format is not none -%}
+  PROPERTIES (
+    {%- if location is not none -%}
+    "location" = "{{ location }}"
+    {%- endif -%}
+    {%- if file_format is not none -%}
+    {%- if location is not none -%},{%- endif -%}
+    "file_format" = "{{ file_format }}"
+    {%- endif -%}
+  )
+  {%- endif -%}
+
 {%- endmacro %}
 
 {%- macro starrocks__partition_by(p_type, cols, init) -%}
